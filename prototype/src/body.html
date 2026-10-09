@@ -1,0 +1,92 @@
+<div id="app" data-mode="plan">
+  <aside id="panel" aria-label="Itinéraire et scénarios">
+    <header class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span></div>
+      <div>
+        <h1>Amap français</h1>
+        <p>Prototype · navigation 3D schématique · Île-de-France</p>
+      </div>
+    </header>
+
+    <section class="block" id="planBlock">
+      <h2>Itinéraire réel</h2>
+      <form id="routeForm" autocomplete="off">
+        <div class="field">
+          <label for="fromInput"><span class="dot dot-from"></span>Départ</label>
+          <input id="fromInput" type="text" placeholder="Adresse, lieu, commune…" />
+          <ul class="suggest" id="fromSuggest" role="listbox" hidden></ul>
+        </div>
+        <div class="field">
+          <label for="toInput"><span class="dot dot-to"></span>Arrivée</label>
+          <input id="toInput" type="text" placeholder="Adresse, lieu, commune…" />
+          <ul class="suggest" id="toSuggest" role="listbox" hidden></ul>
+        </div>
+        <div class="row">
+          <button type="submit" class="btn btn-primary" id="routeBtn">Calculer l'itinéraire</button>
+          <button type="button" class="btn" id="locateBtn">Ma position</button>
+        </div>
+      </form>
+      <div class="presets" id="presets" aria-label="Trajets prêts à l'emploi"></div>
+      <p class="msg" id="routeMsg" role="status"></p>
+      <div class="summary" id="routeSummary" hidden></div>
+    </section>
+
+    <section class="block">
+      <h2>Scénarios de bifurcation</h2>
+      <p class="note">Fonctionnent hors ligne. Géométrie et voies saisies à la main pour tester la lisibilité, elles ne décrivent pas un lieu réel.</p>
+      <div class="scenarios" id="scenarioList"></div>
+    </section>
+
+    <footer class="credits">
+      Données © contributeurs <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> ·
+      itinéraires <a href="https://project-osrm.org/" target="_blank" rel="noopener">OSRM</a> ·
+      adresses <a href="https://geoservices.ign.fr/documentation/services/services-geoplateforme/geocodage" target="_blank" rel="noopener">Géoplateforme IGN / BAN</a> ·
+      fond <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> ·
+      3D <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>.
+      Prototype de test, ne remplace pas un GPS homologué.
+    </footer>
+  </aside>
+
+  <main id="stage">
+    <div id="map" aria-label="Carte"></div>
+    <div id="mapFallback" class="fallback" hidden>
+      <p><strong>Fond de carte indisponible ici.</strong></p>
+      <p>Cette page n'a pas accès aux serveurs de carte, d'adresses et d'itinéraires. Les scénarios de bifurcation fonctionnent quand même. Ouvrez le prototype en local pour les trajets réels.</p>
+    </div>
+    <canvas id="three" aria-label="Vue de navigation 3D"></canvas>
+
+    <div id="hud" aria-live="polite">
+      <div class="banner" id="banner">
+        <canvas id="manIcon" width="120" height="120" aria-hidden="true"></canvas>
+        <div class="banner-text">
+          <div class="dist" id="manDist">–</div>
+          <div class="instr" id="manText">–</div>
+          <div class="road" id="manRoad"></div>
+        </div>
+        <span class="chip" id="decisionChip" hidden>Mode décision</span>
+      </div>
+      <div class="lanes" id="lanes" hidden></div>
+      <div class="hint" id="hint" hidden></div>
+    </div>
+
+    <div id="srcNote" class="src-note"></div>
+
+    <div id="navbar">
+      <button class="btn icon" id="playBtn" aria-label="Lecture">▶</button>
+      <label class="speed" for="speedSel">Vitesse
+        <select id="speedSel">
+          <option value="1">×1</option>
+          <option value="2" selected>×2</option>
+          <option value="4">×4</option>
+          <option value="8">×8</option>
+        </select>
+      </label>
+      <input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="Position sur le trajet" />
+      <button class="btn" id="replayBtn" title="Revenir avant la prochaine manœuvre">Rejouer la manœuvre</button>
+      <button class="btn" id="viewBtn" title="Comparer avec une carte 2D classique">Vue 2D</button>
+      <button class="btn" id="exitBtn">Quitter</button>
+      <div class="stats" id="stats"></div>
+    </div>
+    <button class="btn panel-toggle" id="panelToggle">Menu</button>
+  </main>
+</div>
