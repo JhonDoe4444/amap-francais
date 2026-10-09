@@ -93,18 +93,20 @@ button, input, select { font: inherit; color: inherit; }
 #app[data-mode="nav"].no-minimap #map { display: none; }
 
 #hud { position: absolute; top: 16px; left: 16px; right: 16px; flex-direction: column; align-items: flex-start; gap: 10px; pointer-events: none; z-index: 4; }
-.banner { display: flex; align-items: center; gap: 14px; background: rgba(13, 22, 40, .92); border: 1px solid var(--line); border-radius: 14px; padding: 10px 18px 10px 10px; max-width: min(620px, 100%); box-sizing: border-box; box-shadow: 0 12px 40px rgba(0,0,0,.45); transition: border-color .3s, background .3s; }
+.banner { display: flex; flex-direction: column; gap: 10px; background: rgba(13, 22, 40, .92); border: 1px solid var(--line); border-radius: 14px; padding: 10px 18px 10px 10px; max-width: min(620px, 100%); box-sizing: border-box; box-shadow: 0 12px 40px rgba(0,0,0,.45); transition: border-color .3s, background .3s; }
 .banner.decide { border-color: var(--decide); background: rgba(9, 32, 30, .94); }
-.banner canvas { width: 72px; height: 72px; flex: none; background: var(--sign-blue); border-radius: 10px; }
-.banner.green canvas { background: var(--sign-green); }
-.banner-text { min-width: 0; }
+#manIcon { width: 72px; height: 72px; flex: none; background: var(--sign-blue); border-radius: 10px; }
+.banner.green #manIcon { background: var(--sign-green); }
+.banner-main { display: flex; align-items: center; gap: 14px; }
+.banner-text { min-width: 0; flex: 1; }
 .dist { font-family: var(--font-num); font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .instr { font-size: 18px; font-weight: 700; margin-top: 4px; line-height: 1.25; text-wrap: balance; }
 .road { color: var(--muted); font-size: 13.5px; margin-top: 3px; }
 .chip { align-self: flex-start; margin-left: 6px; background: var(--decide); color: #03140d; font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
-.lanes { display: flex; gap: 4px; align-items: stretch; background: rgba(13, 22, 40, .92); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
-.lanes canvas { width: 46px; height: 58px; border-radius: 6px; background: #1b2944; }
-.lanes canvas.ok { background: #0f4f3c; }
+.lanes { display: flex; gap: 0; align-items: stretch; border-top: 1px solid var(--line); padding-top: 10px; margin-right: -8px; }
+.lanes canvas + canvas { border-left: 2px dashed rgba(231, 237, 247, .35); }
+.lanes canvas { width: 50px; height: 58px; background: transparent; }
+.lanes canvas.ok { background: rgba(70, 224, 174, .16); }
 .lanes .lane-note { font-size: 13px; color: var(--muted); max-width: 40ch; padding: 4px 6px; line-height: 1.4; }
 .lanes .lane-note strong { color: var(--text); }
 .hint { background: rgba(60, 44, 8, .94); border: 1px solid var(--warn); color: #ffe3a3; border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 700; max-width: min(620px, 100%); box-sizing: border-box; }
@@ -134,10 +136,10 @@ button, input, select { font: inherit; color: inherit; }
   #app[data-mode="nav"] .panel-toggle { display: block; top: auto; bottom: 150px; }
   #hud { top: 10px; left: 10px; right: 10px; }
   .banner { padding: 8px 12px 8px 8px; gap: 10px; }
-  .banner canvas { width: 56px; height: 56px; }
+  #manIcon { width: 56px; height: 56px; }
   .dist { font-size: 30px; }
   .instr { font-size: 15px; }
-  .lanes canvas { width: 36px; height: 46px; }
+  .lanes canvas { width: 38px; height: 46px; }
   #app[data-mode="nav"] #map { width: 130px; height: 110px; bottom: 150px; right: 10px; }
   #navbar { left: 10px; right: 10px; bottom: 10px; }
   #replayBtn { display: none; }

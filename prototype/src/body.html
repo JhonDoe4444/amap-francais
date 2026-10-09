@@ -57,15 +57,17 @@
 
     <div id="hud" aria-live="polite">
       <div class="banner" id="banner">
-        <canvas id="manIcon" width="120" height="120" aria-hidden="true"></canvas>
-        <div class="banner-text">
-          <div class="dist" id="manDist">–</div>
-          <div class="instr" id="manText">–</div>
-          <div class="road" id="manRoad"></div>
+        <div class="banner-main">
+          <canvas id="manIcon" width="120" height="120" aria-hidden="true"></canvas>
+          <div class="banner-text">
+            <div class="dist" id="manDist">–</div>
+            <div class="instr" id="manText">–</div>
+            <div class="road" id="manRoad"></div>
+          </div>
+          <span class="chip" id="decisionChip" hidden>Mode décision</span>
         </div>
-        <span class="chip" id="decisionChip" hidden>Mode décision</span>
+        <div class="lanes" id="lanes" hidden></div>
       </div>
-      <div class="lanes" id="lanes" hidden></div>
       <div class="hint" id="hint" hidden></div>
     </div>
 

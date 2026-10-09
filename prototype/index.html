@@ -105,18 +105,20 @@ button, input, select { font: inherit; color: inherit; }
 #app[data-mode="nav"].no-minimap #map { display: none; }
 
 #hud { position: absolute; top: 16px; left: 16px; right: 16px; flex-direction: column; align-items: flex-start; gap: 10px; pointer-events: none; z-index: 4; }
-.banner { display: flex; align-items: center; gap: 14px; background: rgba(13, 22, 40, .92); border: 1px solid var(--line); border-radius: 14px; padding: 10px 18px 10px 10px; max-width: min(620px, 100%); box-sizing: border-box; box-shadow: 0 12px 40px rgba(0,0,0,.45); transition: border-color .3s, background .3s; }
+.banner { display: flex; flex-direction: column; gap: 10px; background: rgba(13, 22, 40, .92); border: 1px solid var(--line); border-radius: 14px; padding: 10px 18px 10px 10px; max-width: min(620px, 100%); box-sizing: border-box; box-shadow: 0 12px 40px rgba(0,0,0,.45); transition: border-color .3s, background .3s; }
 .banner.decide { border-color: var(--decide); background: rgba(9, 32, 30, .94); }
-.banner canvas { width: 72px; height: 72px; flex: none; background: var(--sign-blue); border-radius: 10px; }
-.banner.green canvas { background: var(--sign-green); }
-.banner-text { min-width: 0; }
+#manIcon { width: 72px; height: 72px; flex: none; background: var(--sign-blue); border-radius: 10px; }
+.banner.green #manIcon { background: var(--sign-green); }
+.banner-main { display: flex; align-items: center; gap: 14px; }
+.banner-text { min-width: 0; flex: 1; }
 .dist { font-family: var(--font-num); font-size: 40px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .instr { font-size: 18px; font-weight: 700; margin-top: 4px; line-height: 1.25; text-wrap: balance; }
 .road { color: var(--muted); font-size: 13.5px; margin-top: 3px; }
 .chip { align-self: flex-start; margin-left: 6px; background: var(--decide); color: #03140d; font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
-.lanes { display: flex; gap: 4px; align-items: stretch; background: rgba(13, 22, 40, .92); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
-.lanes canvas { width: 46px; height: 58px; border-radius: 6px; background: #1b2944; }
-.lanes canvas.ok { background: #0f4f3c; }
+.lanes { display: flex; gap: 0; align-items: stretch; border-top: 1px solid var(--line); padding-top: 10px; margin-right: -8px; }
+.lanes canvas + canvas { border-left: 2px dashed rgba(231, 237, 247, .35); }
+.lanes canvas { width: 50px; height: 58px; background: transparent; }
+.lanes canvas.ok { background: rgba(70, 224, 174, .16); }
 .lanes .lane-note { font-size: 13px; color: var(--muted); max-width: 40ch; padding: 4px 6px; line-height: 1.4; }
 .lanes .lane-note strong { color: var(--text); }
 .hint { background: rgba(60, 44, 8, .94); border: 1px solid var(--warn); color: #ffe3a3; border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 700; max-width: min(620px, 100%); box-sizing: border-box; }
@@ -146,10 +148,10 @@ button, input, select { font: inherit; color: inherit; }
   #app[data-mode="nav"] .panel-toggle { display: block; top: auto; bottom: 150px; }
   #hud { top: 10px; left: 10px; right: 10px; }
   .banner { padding: 8px 12px 8px 8px; gap: 10px; }
-  .banner canvas { width: 56px; height: 56px; }
+  #manIcon { width: 56px; height: 56px; }
   .dist { font-size: 30px; }
   .instr { font-size: 15px; }
-  .lanes canvas { width: 36px; height: 46px; }
+  .lanes canvas { width: 38px; height: 46px; }
   #app[data-mode="nav"] #map { width: 130px; height: 110px; bottom: 150px; right: 10px; }
   #navbar { left: 10px; right: 10px; bottom: 10px; }
   #replayBtn { display: none; }
@@ -219,15 +221,17 @@ button, input, select { font: inherit; color: inherit; }
 
     <div id="hud" aria-live="polite">
       <div class="banner" id="banner">
-        <canvas id="manIcon" width="120" height="120" aria-hidden="true"></canvas>
-        <div class="banner-text">
-          <div class="dist" id="manDist">–</div>
-          <div class="instr" id="manText">–</div>
-          <div class="road" id="manRoad"></div>
+        <div class="banner-main">
+          <canvas id="manIcon" width="120" height="120" aria-hidden="true"></canvas>
+          <div class="banner-text">
+            <div class="dist" id="manDist">–</div>
+            <div class="instr" id="manText">–</div>
+            <div class="road" id="manRoad"></div>
+          </div>
+          <span class="chip" id="decisionChip" hidden>Mode décision</span>
         </div>
-        <span class="chip" id="decisionChip" hidden>Mode décision</span>
+        <div class="lanes" id="lanes" hidden></div>
       </div>
-      <div class="lanes" id="lanes" hidden></div>
       <div class="hint" id="hint" hidden></div>
     </div>
 
@@ -263,6 +267,7 @@ button, input, select { font: inherit; color: inherit; }
   const CFG = {
     styleUrl: 'https://tiles.openfreemap.org/styles/liberty',
     osrmUrl: 'https://router.project-osrm.org/route/v1/driving/',
+    valhallaUrl: 'https://valhalla1.openstreetmap.de/trace_attributes',
     geocoders: [
       'https://data.geopf.fr/geocodage/search',
       'https://api-adresse.data.gouv.fr/search/',
@@ -387,7 +392,7 @@ button, input, select { font: inherit; color: inherit; }
     const coords = r.geometry.coordinates;
     const proj = makeProjector(coords[0]);
     const pts = resample(coords.map(proj.fwd), 6);
-    const R = { title: from.label + ' → ' + to.label, source: 'osrm', speed: 0, pts, maneuvers: [], junctions: [], proj, lonlat: coords, duration: r.duration, distance: r.distance };
+    const R = { title: from.label + ' → ' + to.label, source: 'osrm', speed: 0, pts, maneuvers: [], junctions: [], proj, lonlat: coords, duration: r.duration, distance: r.distance, laneSegs: [], baseSegs: [], defaultWidth: 10 };
     const s = cumul(pts);
     let cursor = 0;
     const locate = (ll) => {
@@ -405,6 +410,7 @@ button, input, select { font: inherit; color: inherit; }
     r.legs.forEach((leg) => leg.steps.forEach((step) => {
       (step.intersections || []).forEach((it, k) => {
         const along = locate(it.location);
+        if (it.lanes && it.lanes.length) R.laneSegs.push([along - 350, along, it.lanes.length]);
         const branches = it.bearings
           .map((b, i) => ({ bearing: b, i }))
           .filter((o) => o.i !== it.in && o.i !== it.out)
@@ -430,8 +436,67 @@ button, input, select { font: inherit; color: inherit; }
     }));
     R.speed = r.distance / Math.max(1, r.duration);
     R.coverage = { decisions, lanesKnown };
-    R.note = 'Itinéraire OSRM sur données OpenStreetMap. Voies affichées seulement quand OSM les renseigne (turn:lanes).';
-    return finishRoute(R);
+    R.note = 'Itinéraire OSRM sur données OpenStreetMap. Voies tracées seulement quand OSM les renseigne (lanes, turn:lanes).';
+    finishRoute(R);
+    laneProfile(R);
+    return R;
+  }
+
+  // Profil de voies : nombre de voies (0 = inconnu) et largeur de chaussée en chaque point du tracé.
+  // Sources, de la plus faible à la plus forte : tag OSM lanes (via Valhalla), puis turn:lanes aux carrefours (OSRM).
+  const LANE_W = 3.5;
+  function laneProfile(R) {
+    const n = R.pts.length, lanes = new Array(n).fill(0);
+    const apply = (segs) => segs.forEach(([a, b, k]) => {
+      for (let i = idxAt(R.s, Math.max(0, a)); i < n && R.s[i] <= b; i++) if (R.s[i] >= a) lanes[i] = k;
+    });
+    apply(R.baseSegs || []); apply(R.laneSegs || []);
+    const raw = lanes.map((k) => (k >= 1 ? Math.max(4.5, k * LANE_W) : R.defaultWidth));
+    const width = raw.map((_, i) => {
+      let s = 0, c = 0;
+      for (let j = i - 6; j <= i + 6; j++) if (j >= 0 && j < n) { s += raw[j]; c++; }
+      return s / c;
+    });
+    let known = 0;
+    for (let i = 0; i < n - 1; i++) if (lanes[i] >= 1) known += R.s[i + 1] - R.s[i];
+    R.laneArr = lanes; R.widthArr = width;
+    R.laneCoverage = R.total ? known / R.total : 0;
+  }
+  function decodePolyline(str, precision) {
+    const f = Math.pow(10, precision || 6), out = [];
+    let i = 0, lat = 0, lon = 0;
+    const next = () => { let r = 0, s = 0, b; do { b = str.charCodeAt(i++) - 63; r |= (b & 0x1f) << s; s += 5; } while (b >= 0x20); return r & 1 ? ~(r >> 1) : r >> 1; };
+    while (i < str.length) { lat += next(); lon += next(); out.push([lon / f, lat / f]); }
+    return out;
+  }
+  function makeLocator(R) {
+    let cursor = 0;
+    return (ll) => {
+      const p = R.proj.fwd(ll);
+      let best = cursor, bd = Infinity;
+      const end = Math.min(R.pts.length, cursor + 5000);
+      for (let i = cursor; i < end; i++) {
+        const d = (R.pts[i][0] - p[0]) ** 2 + (R.pts[i][1] - p[1]) ** 2;
+        if (d < bd) { bd = d; best = i; }
+      }
+      cursor = best;
+      return R.s[best];
+    };
+  }
+  // Nombre de voies par tronçon (tag OSM lanes) via la mise en correspondance Valhalla.
+  // Valhalla met 1 voie quand le tag manque : on ne garde que les tronçons à 2 voies ou plus.
+  async function fetchLaneCounts(R) {
+    const body = JSON.stringify({
+      shape: R.lonlat.map((c) => ({ lon: c[0], lat: c[1] })), costing: 'auto', shape_match: 'map_snap',
+      filters: { attributes: ['edge.lane_count', 'edge.begin_shape_index', 'edge.end_shape_index', 'shape'], action: 'include' },
+    });
+    const res = await fetchTimeout(CFG.valhallaUrl, 15000, { method: 'POST', body });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const js = await res.json();
+    const shape = decodePolyline(js.shape, 6), locate = makeLocator(R);
+    R.baseSegs = (js.edges || []).map((e) => [locate(shape[e.begin_shape_index]), locate(shape[e.end_shape_index]), e.lane_count || 0])
+      .filter((s) => s[2] >= 2);
+    laneProfile(R);
   }
 
   // Scénarios : tracé « tortue » (droites et arcs), en mètres.
@@ -458,28 +523,28 @@ button, input, select { font: inherit; color: inherit; }
     {
       id: 'fork', title: 'Bifurcation à deux branches', desc: 'Autoroute à 4 voies qui se sépare. Il faut rester sur les deux voies de gauche.',
       icon: ['slight left'], speed: 30, start: 600,
-      path: [{ s: 1600 }, { a: -9, r: 900 }, { s: 900 }],
+      path: [{ s: 1600 }, { a: -9, r: 900 }, { s: 900 }], lanes: [[0, 1600, 4], [1600, 1e9, 2]],
       maneuvers: [
         { at: 1600, kind: 'fork', modifier: 'slight left', road: 'A6', destinations: 'Lyon · Évry (A6)',
           lanes: [L('slight left', true), L('slight left', true), L('slight right', false), L('slight right', false)],
-          branches: [{ rel: 13, label: 'Bordeaux · Nantes (A10)' }] },
+          branches: [{ rel: 13, label: 'Bordeaux · Nantes (A10)', lanes: 2 }] },
       ],
       junctions: [],
     },
     {
       id: 'exits', title: 'Sorties rapprochées', desc: 'Deux sorties à droite à 450 m d’écart. La bonne est la seconde.',
       icon: ['slight right'], speed: 28, start: 300,
-      path: [{ s: 1450 }, { a: 32, r: 260 }, { s: 500 }],
+      path: [{ s: 1450 }, { a: 32, r: 260 }, { s: 500 }], lanes: [[0, 1450, 3], [1450, 1e9, 1]],
       maneuvers: [
         { at: 1450, kind: 'off ramp', modifier: 'slight right', exits: '8', destinations: 'Orly · Aéroport',
-          lanes: [L('none', false), L('none', false), L('slight right', true)], branches: [{ rel: 0, label: 'Paris · Porte d’Italie' }] },
+          lanes: [L('none', false), L('none', false), L('slight right', true)], branches: [{ rel: 0, label: 'Paris · Porte d’Italie', lanes: 2 }] },
       ],
-      junctions: [{ at: 1000, branches: [{ rel: 26, label: 'Sortie 7 · Rungis' }] }],
+      junctions: [{ at: 1000, branches: [{ rel: 26, label: 'Sortie 7 · Rungis', lanes: 1 }] }],
     },
     {
       id: 'lanes', title: 'Carrefour à cinq voies', desc: 'Boulevard urbain, tourne-à-gauche sur deux voies dédiées.',
       icon: ['left'], speed: 13, start: 80,
-      path: [{ s: 520 }, { a: -90, r: 32 }, { s: 380 }],
+      path: [{ s: 520 }, { a: -90, r: 32 }, { s: 380 }], lanes: [[0, 520, 5], [520, 1e9, 2]],
       maneuvers: [
         { at: 520, kind: 'turn', modifier: 'left', road: 'Avenue de la Gare', destinations: 'Gare · Centre-ville',
           lanes: [L('left', true), L('left', true), L('straight', false), L('straight', false), L('right', false)],
@@ -499,9 +564,9 @@ button, input, select { font: inherit; color: inherit; }
   ];
   function fromScenario(sc) {
     const pts = turtle(sc.path);
-    const R = { title: sc.title, source: 'exemple', speed: sc.speed, pts, maneuvers: [], junctions: [], scenario: sc };
+    const R = { title: sc.title, source: 'exemple', speed: sc.speed, pts, maneuvers: [], junctions: [], scenario: sc, laneSegs: sc.lanes || [], baseSegs: [], defaultWidth: sc.speed > 20 ? 11 : 9 };
     R.s = cumul(pts); R.total = R.s[R.s.length - 1];
-    const mk = (b, along) => ({ bearing: (headingAt(R, Math.max(0, along - 10), 10) + b.rel + 360) % 360, label: b.label || null });
+    const mk = (b, along) => ({ bearing: (headingAt(R, Math.max(0, along - 10), 10) + b.rel + 360) % 360, label: b.label || null, lanes: b.lanes || 0 });
     R.maneuvers.push({ along: 0, kind: 'depart', road: '', branches: [] });
     sc.maneuvers.forEach((m) => {
       const o = Object.assign({}, m, { along: m.at, decision: true, side: sideOf(m.modifier), branches: m.branches.map((b) => mk(b, m.at)) });
@@ -512,7 +577,9 @@ button, input, select { font: inherit; color: inherit; }
     R.note = 'Scénario d’exemple : géométrie, voies et panneaux saisis à la main pour tester la lisibilité.';
     const dec = R.maneuvers.filter((m) => m.decision);
     R.coverage = { decisions: dec.length, lanesKnown: dec.filter((m) => m.lanes).length };
-    return finishRoute(R);
+    finishRoute(R);
+    laneProfile(R);
+    return R;
   }
 
   // ---------- pictogrammes (canvas) ----------
@@ -574,10 +641,10 @@ button, input, select { font: inherit; color: inherit; }
   const GL = {};
 
   const VERT = `
-    attribute float along; attribute float side;
-    varying float vA; varying float vS; varying float vD;
+    attribute float along; attribute float side; attribute float laneN; attribute float roadW;
+    varying float vA; varying float vS; varying float vD; varying float vN; varying float vW;
     void main() {
-      vA = along; vS = side;
+      vA = along; vS = side; vN = laneN; vW = roadW;
       vec4 mv = modelViewMatrix * vec4(position, 1.0);
       vD = length(mv.xyz);
       gl_Position = projectionMatrix * mv;
@@ -594,10 +661,25 @@ button, input, select { font: inherit; color: inherit; }
       vertexShader: VERT,
       fragmentShader: FOG_GLSL + `
         uniform vec3 uCol; uniform vec3 uEdge; uniform float uLen; uniform float uDim;
-        varying float vA; varying float vS; varying float vD;
+        varying float vA; varying float vS; varying float vD; varying float vN; varying float vW;
         void main() {
-          float e = smoothstep(0.86, 0.9, abs(vS)) * (1.0 - smoothstep(0.95, 0.99, abs(vS)));
+          // ligne de rive pleine à 0,3 m du bord
+          float edgeU = 0.45 / max(vW, 4.0);
+          float u = (vS + 1.0) * 0.5;
+          float du = min(u, 1.0 - u);
+          float e = smoothstep(edgeU - 0.01, edgeU, du) * (1.0 - smoothstep(edgeU + 0.025, edgeU + 0.035, du)) * step(1.0, vW);
+          if (vW < 1.0) e = smoothstep(0.86, 0.9, abs(vS)) * (1.0 - smoothstep(0.95, 0.99, abs(vS)));
           vec3 c = mix(uCol, uEdge, e * 0.75);
+          // séparateurs de voies en tirets (seulement si le nombre de voies est connu)
+          if (vN > 1.5) {
+            float n = floor(vN + 0.5);
+            float f = u * n;
+            float k = floor(f + 0.5);
+            float d = abs(f - k) * vW / n;
+            float line = (1.0 - smoothstep(0.07, 0.11, d)) * step(0.5, k) * step(k, n - 0.5);
+            float dash = step(fract(vA / 13.0), 0.46);
+            c = mix(c, vec3(0.92, 0.95, 1.0), line * dash * 0.8);
+          }
           c = mix(c, c * 0.45, uDim);
           float a = 1.0 - smoothstep(0.985, 1.0, abs(vS));
           if (uLen > 0.0) a *= 1.0 - smoothstep(uLen * 0.4, uLen, vA);
@@ -611,47 +693,61 @@ button, input, select { font: inherit; color: inherit; }
       uniforms: Object.assign(fogUniforms(), {
         uPos: { value: 0 }, uNext: { value: -1e9 }, uDecision: { value: 0 }, uTime: { value: 0 },
         uGuide: { value: COL.guide }, uDecide: { value: COL.decide },
+        uBandFrom: { value: -1e9 }, uBandTo: { value: -1e9 }, uLo: { value: 0.35 }, uHi: { value: 0.65 },
       }),
       vertexShader: VERT,
       fragmentShader: FOG_GLSL + `
         uniform float uPos; uniform float uNext; uniform float uDecision; uniform float uTime;
         uniform vec3 uGuide; uniform vec3 uDecide;
-        varying float vA; varying float vS; varying float vD;
+        uniform float uBandFrom; uniform float uBandTo; uniform float uLo; uniform float uHi;
+        varying float vA; varying float vS; varying float vD; varying float vN; varying float vW;
         void main() {
           if (vA < uPos - 1.0) discard;
+          // bande guidée : au centre par défaut, glisse sur les voies à prendre avant la manœuvre
+          float u = (vS + 1.0) * 0.5;
+          float hw = min(0.31, 2.7 / max(vW, 4.0));
+          float wl = smoothstep(uBandFrom - 140.0, uBandFrom, vA) * (1.0 - smoothstep(uBandTo + 10.0, uBandTo + 60.0, vA));
+          float lo = mix(0.5 - hw, uLo, wl), hi2 = mix(0.5 + hw, uHi, wl);
+          float band = smoothstep(lo - 0.015, lo + 0.005, u) * (1.0 - smoothstep(hi2 - 0.005, hi2 + 0.015, u));
+          if (band < 0.01) discard;
           float hi = uDecision * smoothstep(uNext - 260.0, uNext - 200.0, vA) * (1.0 - smoothstep(uNext + 200.0, uNext + 260.0, vA));
           vec3 c = mix(uGuide, uDecide, hi);
           float chev = fract((vA + abs(vS) * 5.0) / 16.0 - uTime * (0.9 + hi * 0.8));
           float m = smoothstep(0.62, 0.68, chev) * (1.0 - smoothstep(0.82, 0.88, chev));
           c = mix(c, vec3(1.0), m * (0.35 + 0.4 * hi));
-          float a = (1.0 - smoothstep(0.8, 1.0, abs(vS))) * (0.82 + 0.18 * hi);
+          float a = band * (0.78 + 0.2 * hi);
           a *= smoothstep(uPos - 1.0, uPos + 6.0, vA);
           gl_FragColor = fogged(c, a, vD);
         }`,
     });
   }
 
-  function ribbon(pts, width, y, out, along0) {
+  function ribbon(pts, width, y, out, along0, lanes) {
     const n = pts.length, base = out.pos.length / 3;
     let acc = along0 || 0;
     for (let i = 0; i < n; i++) {
       const p = pts[i], a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
       let dx = b[0] - a[0], dy = b[1] - a[1];
       const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
-      const nx = -dy, ny = dx, w = width / 2;
+      const W = typeof width === 'number' ? width : width[i];
+      const nx = -dy, ny = dx, w = W / 2;
       if (i > 0) acc += Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]);
       out.pos.push(p[0] + nx * w, y, -(p[1] + ny * w), p[0] - nx * w, y, -(p[1] - ny * w));
       out.along.push(acc, acc); out.side.push(-1, 1);
+      const N = lanes ? lanes[i] : 0;
+      out.lanes.push(N, N); out.width.push(W, W);
       if (i < n - 1) { const k = base + i * 2; out.idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
     }
     return out;
   }
-  const newBuf = () => ({ pos: [], along: [], side: [], idx: [] });
+  const newBuf = () => ({ pos: [], along: [], side: [], idx: [], lanes: [], width: [] });
   function bufGeometry(buf) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(buf.pos, 3));
     g.setAttribute('along', new THREE.Float32BufferAttribute(buf.along, 1));
     g.setAttribute('side', new THREE.Float32BufferAttribute(buf.side, 1));
+    g.setAttribute('laneN', new THREE.Float32BufferAttribute(buf.lanes, 1));
+    g.setAttribute('roadW', new THREE.Float32BufferAttribute(buf.width, 1));
     g.setIndex(buf.idx);
     return g;
   }
@@ -714,21 +810,25 @@ button, input, select { font: inherit; color: inherit; }
   function loadScene(R) {
     disposeGroup(GL.routeGroup); disposeGroup(GL.focus); GL.focus = null; GL.focusFor = null;
     const g = new THREE.Group();
-    const maxLanes = Math.max(0, ...R.maneuvers.map((m) => (m.lanes ? m.lanes.length : 0)));
-    R.width = R.source === 'exemple' ? Math.max(9, maxLanes * 3.6) : 12;
-    // route complète
-    g.add(new THREE.Mesh(bufGeometry(ribbon(R.pts, R.width, 0.04, newBuf())), roadMaterial(COL.asphalt)));
-    const guide = new THREE.Mesh(bufGeometry(ribbon(R.pts, R.width * 0.62, 0.12, newBuf())), guideMaterial());
+    laneProfile(R);
+    R.width = R.defaultWidth;
+    // route complète : largeur et séparateurs de voies suivant le profil
+    g.add(new THREE.Mesh(bufGeometry(ribbon(R.pts, R.widthArr, 0.04, newBuf(), 0, R.laneArr)), roadMaterial(COL.asphalt)));
+    const guide = new THREE.Mesh(bufGeometry(ribbon(R.pts, R.widthArr, 0.12, newBuf(), 0, R.laneArr)), guideMaterial());
     guide.renderOrder = 2; g.add(guide);
     // petites rues croisées (fusionnées en une géométrie)
     const minor = newBuf();
-    R.junctions.forEach((j) => j.branches.forEach((b) => ribbon(stubPts(R, j.along, b.bearing, j.outBearing, 70), Math.min(R.width, 8), 0.0, minor, 0)));
+    R.junctions.forEach((j) => j.branches.forEach((b) => ribbon(stubPts(R, j.along, b.bearing, j.outBearing, b.lanes ? 160 : 70), b.lanes ? Math.max(4.5, b.lanes * LANE_W) : Math.min(R.width, 8), 0.0, minor, 0)));
     if (minor.pos.length) g.add(new THREE.Mesh(bufGeometry(minor), roadMaterial(COL.asphalt, 70)));
     // branches non prises aux manœuvres : une géométrie par manœuvre pour pouvoir les assombrir
     R.maneuvers.forEach((m) => {
       if (!m.branches.length) return;
       const buf = newBuf();
-      m.branches.forEach((b) => ribbon(stubPts(R, m.along, b.bearing, m.outBearing, m.decision ? 220 : 80), R.width * (m.decision ? 0.85 : 0.65), 0.02, buf, 0));
+      m.branches.forEach((b) => {
+        const pts = stubPts(R, m.along, b.bearing, m.outBearing, m.decision ? 220 : 80);
+        const w = b.lanes ? Math.max(4.5, b.lanes * LANE_W) : R.width * (m.decision ? 0.85 : 0.65);
+        ribbon(pts, w, 0.02, buf, 0, b.lanes >= 2 ? pts.map(() => b.lanes) : null);
+      });
       m.stubMat = roadMaterial(COL.asphaltHi, m.decision ? 220 : 80);
       g.add(new THREE.Mesh(bufGeometry(buf), m.stubMat));
     });
@@ -767,7 +867,7 @@ button, input, select { font: inherit; color: inherit; }
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
   function laneDecal(R, m) {
-    const n = m.lanes.length, lw = 3.6, W = n * lw;
+    const n = m.lanes.length, lw = LANE_W, W = n * lw;
     const c = document.createElement('canvas'), ctx = c.getContext('2d');
     c.width = n * 128; c.height = 256;
     m.lanes.forEach((l, i) => drawArrow(ctx, l.ind, i * 128 + 64, 150, 200, l.valid ? '#ffffff' : 'rgba(150,165,190,.45)', 16));
@@ -776,7 +876,7 @@ button, input, select { font: inherit; color: inherit; }
     const tex = new THREE.CanvasTexture(c);
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(W, 16), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
     mesh.rotation.order = 'YXZ';
-    const at = Math.max(0, m.along - 70), p = pointAt(R, at);
+    const at = Math.max(0, m.along - 45), p = pointAt(R, at);
     mesh.rotation.x = -Math.PI / 2; mesh.rotation.y = -headingAt(R, at, 20) * RAD;
     mesh.position.set(p.x, 0.2, -p.y); mesh.renderOrder = 3;
     return mesh;
@@ -833,6 +933,12 @@ button, input, select { font: inherit; color: inherit; }
     R.maneuvers.forEach((mm) => { if (mm.stubMat) mm.stubMat.uniforms.uDim.value = mm === m ? SIM.decision : 0; });
     const u = GL.guideMat.uniforms;
     u.uPos.value = SIM.pos; u.uNext.value = m.decision ? m.along : -1e9; u.uDecision.value = SIM.decision; u.uTime.value = SIM.time;
+    const band = m.decision && m.lanes ? validRange(m.lanes) : null;
+    if (band) {
+      const n = m.lanes.length, inset = 0.12 / n;
+      u.uLo.value = band[0] / n + inset; u.uHi.value = (band[1] + 1) / n - inset;
+      u.uBandTo.value = m.along; u.uBandFrom.value = m.along - Math.max(320, range * 1.4);
+    } else { u.uBandFrom.value = -1e9; u.uBandTo.value = -1e9; }
 
     // véhicule
     const p = pointAt(R, SIM.pos), hd = headingAt(R, SIM.pos, 10);
@@ -842,6 +948,12 @@ button, input, select { font: inherit; color: inherit; }
     GL.renderer.render(GL.scene, GL.camera);
 
     if (t - SIM.hudAt > 90) { SIM.hudAt = t; updateHud(R, m, toNext, range); updateMinimap(R, p, hd); }
+  }
+
+  function validRange(lanes) {
+    let a = -1, b = -1;
+    lanes.forEach((l, i) => { if (l.valid) { if (a < 0) a = i; b = i; } });
+    return a < 0 ? null : [a, b];
   }
 
   function updateCamera(R, p, toNext, dt) {
@@ -893,7 +1005,9 @@ button, input, select { font: inherit; color: inherit; }
     hint.textContent = msg; hint.hidden = !msg;
     const kmh = SIM.playing ? Math.round(R.speed * 3.6) : 0;
     const remain = R.total - SIM.pos;
-    $('#stats').innerHTML = '<b>' + kmh + '</b> km/h simulés · reste <b>' + fmtDist(remain) + '</b> · ' + fmtDur(remain / R.speed);
+    const k = R.laneArr[idxAt(R.s, SIM.pos)];
+    $('#stats').innerHTML = '<b>' + kmh + '</b> km/h simulés · ' + (k >= 1 ? '<b>' + k + '</b> voie' + (k > 1 ? 's' : '') : 'voies inconnues') +
+      ' · reste <b>' + fmtDist(remain) + '</b> · ' + fmtDur(remain / R.speed);
     const sc = $('#scrub'); if (document.activeElement !== sc) sc.value = Math.round(SIM.pos / R.total * 1000);
   }
   function renderLanes(m, show) {
@@ -998,9 +1112,9 @@ button, input, select { font: inherit; color: inherit; }
   }
 
   // ---------- adresses (Géoplateforme / BAN) ----------
-  function fetchTimeout(url, ms) {
+  function fetchTimeout(url, ms, opts) {
     const ctl = new AbortController(), id = setTimeout(() => ctl.abort(), ms);
-    return fetch(url, { signal: ctl.signal }).finally(() => clearTimeout(id));
+    return fetch(url, Object.assign({ signal: ctl.signal }, opts)).finally(() => clearTimeout(id));
   }
   async function geocode(q) {
     let lastErr;
@@ -1078,8 +1192,11 @@ button, input, select { font: inherit; color: inherit; }
       const js = await res.json();
       if (js.code !== 'Ok' || !js.routes || !js.routes.length) throw new Error(js.message || 'aucun itinéraire');
       const R = fromOsrm(js, MAP.from, MAP.to);
+      msg.textContent = 'Lecture du nombre de voies…';
+      try { await fetchLaneCounts(R); R.lanesSource = 'valhalla'; }
+      catch (e) { R.lanesSource = 'carrefours'; }
       MAP.route = R;
-      msg.textContent = '';
+      msg.textContent = R.lanesSource === 'valhalla' ? '' : 'Nombre de voies connu seulement aux carrefours renseignés (service Valhalla indisponible).';
       showRouteOnMap(R);
       renderSummary(R);
     } catch (e) {
@@ -1093,6 +1210,7 @@ button, input, select { font: inherit; color: inherit; }
     box.innerHTML = '<div class="big">' + fmtDist(R.distance) + '<small>' + fmtDur(R.duration) + '</small></div>' +
       '<dl><dt>Manœuvres à décision</dt><dd>' + c.decisions + '</dd>' +
       '<dt>Avec voies renseignées (OSM)</dt><dd>' + c.lanesKnown + ' (' + pct + ' %)</dd>' +
+      '<dt>Nombre de voies connu</dt><dd>' + Math.round(R.laneCoverage * 100) + ' % du trajet</dd>' +
       '<dt>Intersections traversées</dt><dd>' + R.junctions.length + '</dd></dl>' +
       '<button class="btn btn-go" id="goBtn">Démarrer la navigation simulée</button>';
     box.hidden = false;

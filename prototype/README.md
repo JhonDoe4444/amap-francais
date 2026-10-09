@@ -21,6 +21,8 @@ Ouvrir directement `index.html` dans le navigateur fonctionne aussi. Une connexi
 - **Itinéraire OSRM** avec étapes, intersections et voies (`turn:lanes` d'OSM quand elles existent).
 - **Audit de couverture** du trajet : nombre de manœuvres à décision et part de celles dont les voies sont renseignées dans OSM.
 - **Navigation simulée** rejouable (lecture, vitesse ×1 à ×8, curseur, « Rejouer la manœuvre ») dans une scène three.js : route en ruban, flèche du véhicule, caméra qui suit.
+- **Voies tracées sur la chaussée** comme dans Amap : largeur de route = nombre de voies × 3,5 m, séparateurs en tirets, nombre de voies affiché en bas. Sources : tag OSM `lanes` par tronçon (lu via la mise en correspondance Valhalla `trace_attributes`), complété par `turn:lanes` aux carrefours (OSRM). Valhalla met 1 voie quand le tag manque, donc seuls les tronçons à 2 voies ou plus sont pris en compte ; ailleurs la route reste générique.
+- **Bande de guidage par voie** : avant une manœuvre dont les voies sont connues, la bande verte glisse sur les voies à prendre, et les flèches de voies s'affichent dans le bandeau du haut.
 - **Mode décision** à l'approche d'une manœuvre (≈ 14 s avant, entre 160 et 480 m) : caméra plus basse, branche à prendre surlignée en vert avec chevrons animés, branches à éviter assombries, panneau directionnel, flèches de voies au sol et dans le bandeau.
 - **Alerte « sortie suivante »** quand une autre sortie ou rue du même côté précède la vôtre.
 - **Données absentes** : sans voies dans OSM, le bandeau le dit et la scène reste générale. Rien n'est inventé.
@@ -47,6 +49,7 @@ Après une modification dans `src/`, relancer `python3 build.py`.
 | Brique | Service | Licence / conditions |
 |---|---|---|
 | Données routières | OpenStreetMap | ODbL, attribution « © contributeurs OpenStreetMap » obligatoire |
+| Nombre de voies | Serveur Valhalla public FOSSGIS (`valhalla1.openstreetmap.de`) | Usage raisonnable, pas pour la production |
 | Itinéraire | Serveur de démo OSRM (`router.project-osrm.org`) | Usage raisonnable seulement, pas pour la production. À remplacer par une instance OSRM ou Valhalla hébergée (extrait Geofabrik Île-de-France) |
 | Adresses | Géoplateforme IGN (`data.geopf.fr/geocodage`), repli sur `api-adresse.data.gouv.fr` | Service public gratuit, Licence Ouverte |
 | Fond de carte | OpenFreeMap (style Liberty) | Gratuit, sans clé, données OSM |
